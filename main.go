@@ -183,22 +183,55 @@ func main() {
 	}
 }
 
-func getWeather(city, apiKey string) (string, error) {
-	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric&lang=ua", city, apiKey)
+func getWeather(city string, weatherApiKey string) (string, error) {
+	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric&lang=ua", city, weatherApiKey)
+
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("помилка запиту: %v", err)
 	}
 	defer resp.Body.Close()
+
 	body, _ := io.ReadAll(resp.Body)
 
 	var data WeatherResponse
-	if err := json.Unmarshal(body, &data); err != nil || len(data.Weather) == 0 {
-		return "", fmt.Errorf("помилка парсингу")
+	err = json.Unmarshal(body, &data)
+	if err != nil || len(data.Weather) == 0 {
+		return "", fmt.Errorf("не вдалося отримати дані для %s", city)
 	}
 
-	return fmt.Sprintf("📍 %s: %.1f°C, 💧 %d%%, %s",
-		data.Name, data.Main.Temp, data.Main.Humidity, data.Weather[0].Description), nil
+	text := fmt.Sprintf("📍 Погода в місті %s:\n🌡 %.1f°C\n💧 Вологість: %d%%\n☁️ %s (%s)\n\n🧠 Коментар:\n",
+		data.Name, data.Main.Temp, data.Main.Humidity, data.Weather[0].Description, data.Weather[0].Main)
+
+	switch {
+	case data.Main.Temp <= -10:
+		text += "🥶 Надворі так холодно, що навіть Wi-Fi замерз!"
+	case data.Main.Temp <= 0:
+		text += "🧥 Вдягайся як капуста — шар за шаром."
+	case data.Main.Temp <= 10:
+		text += "🌀 Краще залишайся вдома з чаєм."
+	case data.Main.Temp <= 20:
+		text += "🌤 Легенький светрик не завадить."
+	case data.Main.Temp <= 30:
+		text += "😎 Ідеально! Йди ловити сонце."
+	default:
+		text += "🔥 Надворі жарко. Тримайся в тіні й пий воду."
+	}
+
+	switch data.Weather[0].Main {
+	case "Rain":
+		text += "\n☔ Парасоля — твій найкращий друг сьогодні."
+	case "Snow":
+		text += "\n❄ Головне — не лизати металеві предмети."
+	case "Clear":
+		text += "\n🌞 Можна засмагати, але не перегрівайся."
+	case "Thunderstorm":
+		text += "\n⛈ Краще не виходити з дому без причини."
+	case "Clouds":
+		text += "\n🌫 Ідеально для філософських думок про сенс життя."
+	}
+
+	return text, nil
 }
 
 func getDailyForecast(city, apiKey string) (string, error) {
