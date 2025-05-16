@@ -14,5 +14,3 @@
 *.idea/
 *.vscode/
 
-# go build
-/go.sum
