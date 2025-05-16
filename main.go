@@ -12,7 +12,6 @@ import (
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/joho/godotenv"
 )
 
 type WeatherResponse struct {
@@ -96,10 +95,10 @@ func getWeather(city string, weatherApiKey string) (string, error) {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("❌ Не вдалося завантажити .env файл")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("❌ Не вдалося завантажити .env файл")
+	// }
 
 	telegramToken := os.Getenv("TELEGRAM_TOKEN")
 	weatherApiKey := os.Getenv("WEATHER_API_KEY")
