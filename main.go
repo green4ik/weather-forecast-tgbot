@@ -112,6 +112,12 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := bot.GetUpdatesChan(u)
+	go func() {
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "✅ Bot is running")
+		})
+		log.Fatal(http.ListenAndServe(":10000", nil)) // Render автоматично визначить PORT
+	}()
 
 	for update := range updates {
 		if update.Message == nil {
